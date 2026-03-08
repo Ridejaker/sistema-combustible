@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FuelMaster — Actividad</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/mobile.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" media="print" onload="this.media='all'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"/></noscript>
+  <style>body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;}</style>
+</head>
+<body class="min-h-screen flex">
+
+{% include 'sidebar.html' %}
+
+<main class="flex-1 overflow-auto">
+  <header class="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700/50 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white" style="font-family:'Syne',sans-serif">Registro de Actividad</h1>
+      <p class="text-slate-400 text-xs mt-0.5">Historial de acciones realizadas por todos los usuarios</p>
+    </div>
+    <button onclick="loadActividad()" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-xl transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Actualizar
+    </button>
+  </header>
+
+  <div class="px-8 py-6">
+    <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700/50 bg-slate-900/40">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha / Hora</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuario</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Accion</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Detalle</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">IP</th>
+            </tr>
+          </thead>
+          <tbody id="act-tbody">
+            <tr><td colspan="5" class="text-center py-10 text-slate-500">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const ACCION_CONFIG = {
+  'LOGIN':           { color:'bg-green-900/50 text-green-300',  icon:'→' },
+  'LOGOUT':          { color:'bg-slate-700/50 text-slate-300',  icon:'←' },
+  'CREAR_LIQUIDO':   { color:'bg-orange-900/50 text-orange-300',icon:'+' },
+  'EDITAR_LIQUIDO':  { color:'bg-yellow-900/50 text-yellow-300',icon:'✎' },
+  'ELIMINAR_LIQUIDO':{ color:'bg-red-900/50 text-red-300',      icon:'✕' },
+  'CREAR_GLP':       { color:'bg-sky-900/50 text-sky-300',      icon:'+' },
+  'EDITAR_GLP':      { color:'bg-yellow-900/50 text-yellow-300',icon:'✎' },
+  'ELIMINAR_GLP':    { color:'bg-red-900/50 text-red-300',      icon:'✕' },
+  'CREAR_USUARIO':   { color:'bg-violet-900/50 text-violet-300',icon:'👤' },
+  'EDITAR_USUARIO':  { color:'bg-violet-900/50 text-violet-300',icon:'✎' },
+  'TOGGLE_USUARIO':  { color:'bg-violet-900/50 text-violet-300',icon:'⟳' },
+};
+
+async function loadActividad() {
+  const res  = await fetch('/api/actividad');
+  const data = await res.json();
+  const tbody = document.getElementById('act-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500">Sin actividad registrada</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const cfg = ACCION_CONFIG[r.accion] || {color:'bg-slate-700/50 text-slate-300', icon:'•'};
+    return `
+      <tr class="tbl-row border-b border-slate-700/30">
+        <td class="px-4 py-2.5 text-slate-400 text-xs whitespace-nowrap">${r.fecha}</td>
+        <td class="px-4 py-2.5">
+          <span class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+              ${r.username.slice(0,2).toUpperCase()}
+            </span>
+            <span class="text-slate-200 text-sm font-medium">${r.username}</span>
+          </span>
+        </td>
+        <td class="px-4 py-2.5">
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.color}">
+            ${cfg.icon} ${r.accion.replace(/_/g,' ')}
+          </span>
+        </td>
+        <td class="px-4 py-2.5 text-slate-400 text-xs max-w-xs truncate">${r.detalle || '—'}</td>
+        <td class="px-4 py-2.5 text-slate-600 text-xs">${r.ip || '—'}</td>
+      </tr>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadActividad);
+setInterval(loadActividad, 30000); // auto-refresh every 30s
+</script>
+</body>
+</html>

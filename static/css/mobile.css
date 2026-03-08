@@ -1,0 +1,318 @@
+/* ═══════════════════════════════════════════════════════════
+   FUELMASTER — MOBILE RESPONSIVE STYLES
+   Breakpoint principal: < 768px (md)
+═══════════════════════════════════════════════════════════ */
+
+/* ── SIDEBAR DRAWER en mobile ─────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Body layout: columna en lugar de row */
+  body.min-h-screen.flex {
+    flex-direction: column;
+  }
+
+  /* Sidebar fijo como drawer */
+  aside {
+    position: fixed !important;
+    top: 0;
+    left: -100%;
+    width: 240px !important;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(.4,0,.2,1);
+    box-shadow: 4px 0 24px rgba(0,0,0,.5);
+  }
+
+  aside.mobile-open {
+    left: 0 !important;
+  }
+
+  /* Overlay oscuro detrás del sidebar */
+  #sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+  #sidebar-overlay.active {
+    display: block;
+  }
+
+  /* Main ocupa todo el ancho */
+  main {
+    flex: 1;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── TOPBAR MOBILE ── */
+  #mobile-topbar {
+    display: flex !important;
+  }
+
+  /* Header en páginas internas — reducir padding */
+  main > header {
+    padding: 12px 16px !important;
+  }
+
+  main > header h1 {
+    font-size: 1rem !important;
+  }
+
+  /* El badge USD/PEN se achica */
+  main > header > div:last-child {
+    padding: 6px 10px !important;
+    font-size: 11px;
+  }
+
+  /* ── CONTENIDO PRINCIPAL ── */
+  .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .py-6 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+
+  /* ── KPI CARDS: 1 columna en mobile ── */
+  .grid.grid-cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* ── FORMULARIOS: forzar 1 columna ── */
+  .grid.grid-cols-2,
+  .grid.md\:grid-cols-5,
+  .grid.md\:grid-cols-4,
+  .grid.grid-cols-2.md\:grid-cols-5,
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Resultado automático: wrap centrado */
+  .flex.items-center.justify-center.gap-4.flex-wrap {
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Botón submit: ancho completo */
+  .flex.justify-end {
+    justify-content: stretch !important;
+  }
+  .flex.justify-end > button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── TABLA: ocultar en mobile → usar CARDS ── */
+  .mobile-hide-table .overflow-x-auto { display: none !important; }
+  .mobile-cards { display: block !important; }
+
+  /* ── CARDS de registros ── */
+  .record-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .record-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+  .record-card .card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .record-card .card-sub {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .record-card .card-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    background: rgba(14,165,233,.15);
+    color: #38bdf8;
+    white-space: nowrap;
+  }
+  .record-card .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .record-card .card-item label {
+    font-size: 0.65rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: block;
+    margin-bottom: 1px;
+  }
+  .record-card .card-item span {
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    font-weight: 500;
+  }
+  .record-card .card-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .record-card .card-actions button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+
+  /* ── DEPOSITOS: input row en columna ── */
+  #glp-dep-desc, #liq-dep-desc {
+    width: 100% !important;
+  }
+  .px-6.py-3.border-b.border-slate-700\\/30.flex.items-center.gap-3 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* ── PANELES LG:2 cols → 1 col ── */
+  .grid.grid-cols-1.lg\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── CHAT WIDGET en mobile ── */
+  #chat-widget {
+    width: calc(100vw - 32px) !important;
+    max-width: 360px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+  }
+
+  #chat-panel {
+    max-height: 70vh !important;
+  }
+
+  #chat-msgs {
+    height: 220px !important;
+  }
+
+  /* ── DASHBOARD grid ── */
+  .grid.grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── ACTIVIDAD / USUARIOS: tabla → scroll o cards ── */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── MODAL de eliminación: más ancho ── */
+  #delete-modal > div:last-child {
+    width: calc(100vw - 48px) !important;
+    max-width: 340px !important;
+  }
+
+  /* ── LOGIN / SOLICITUD: padding ── */
+  .max-w-md { padding: 0 1rem; }
+
+  /* ── RESULTADO AUTOMÁTICO en mobile: vertical ── */
+  .resultado-formula {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .resultado-formula > div { width: 100%; text-align: center; }
+
+  /* ── BIENVENIDA ── */
+  #bienvenida-card {
+    margin: 1rem !important;
+    padding: 2rem 1.5rem !important;
+  }
+
+  /* ── Topbar KPI: 2 cols ── */
+  .stats-grid-mobile {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ── MOBILE TOPBAR (oculto en desktop) ─────────────────── */
+#mobile-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#mobile-topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#mobile-topbar .brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+#mobile-topbar .brand-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+}
+
+#hamburger-btn {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* ── Inputs más altos en mobile para touch ───────────────── */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="password"],
+  input[type="email"],
+  select,
+  textarea {
+    min-height: 46px !important;
+    font-size: 16px !important; /* evita zoom en iOS */
+  }
+
+  button[type="submit"],
+  .btn-primary {
+    min-height: 48px !important;
+  }
+
+  /* Feedback de touch */
+  button:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ── CARDS visibles solo en mobile ────────────────────────── */
+.mobile-cards {
+  display: none;
+}
+

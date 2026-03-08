@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FuelMaster — Usuarios</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/mobile.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" media="print" onload="this.media='all'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"/></noscript>
+  <style>
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;}
+    select option{background:#1e293b;}
+    .tab-btn.active{background:#1e3a8a;color:#fff;border-color:#3b82f6;}
+    input:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.2);}
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+{% include 'sidebar.html' %}
+
+<main class="flex-1 overflow-auto">
+  <header class="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700/50 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white" style="font-family:'Syne',sans-serif">Gestion de Usuarios</h1>
+      <p class="text-slate-400 text-xs mt-0.5">Panel exclusivo de Technological Imperius</p>
+    </div>
+    <button onclick="openNewModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nuevo Usuario
+    </button>
+  </header>
+
+  <div class="px-8 py-6 space-y-6">
+
+    <!-- Tabs -->
+    <div class="flex gap-2">
+      <button onclick="showSection('usuarios')" id="tab-usuarios"
+        class="tab-btn active px-4 py-2 rounded-xl border border-blue-600 text-sm font-medium text-white">
+        👥 Usuarios Activos
+      </button>
+      <button onclick="showSection('solicitudes')" id="tab-solicitudes"
+        class="tab-btn px-4 py-2 rounded-xl border border-slate-600 text-sm font-medium text-slate-400 relative">
+        📨 Solicitudes de Acceso
+        <span id="badge-sol" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold"></span>
+      </button>
+      <button onclick="showSection('bajas')" id="tab-bajas"
+        class="tab-btn px-4 py-2 rounded-xl border border-slate-600 text-sm font-medium text-slate-400 relative">
+        🗑️ Solicitudes de Baja
+        <span id="badge-baja" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] flex items-center justify-center font-bold"></span>
+      </button>
+    </div>
+
+    <!-- ── SECCION: Usuarios ── -->
+    <div id="sec-usuarios">
+      <div class="flex items-start gap-3 bg-amber-900/20 border border-amber-700/40 rounded-2xl px-5 py-3 mb-4">
+        <svg class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <p class="text-amber-300/80 text-xs">Solo Technological Imperius puede crear, editar o desactivar usuarios. Todos los supervisores comparten la misma base de datos.</p>
+      </div>
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-700/50 bg-slate-900/40">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Usuario</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Nombre</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Rol</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Estado</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Creado</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="6" class="text-center py-10 text-slate-500">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECCION: Solicitudes de acceso ── -->
+    <div id="sec-solicitudes" class="hidden">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50">
+          <p class="font-semibold text-white">Solicitudes de Acceso al Sistema</p>
+          <p class="text-slate-500 text-xs mt-0.5">Enviadas desde la pagina publica /solicitar-acceso</p>
+        </div>
+        <div id="solicitudes-list" class="divide-y divide-slate-700/40">
+          <div class="text-center py-10 text-slate-500">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECCION: Solicitudes de baja ── -->
+    <div id="sec-bajas" class="hidden">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50">
+          <p class="font-semibold text-white">Solicitudes de Eliminacion de Cuenta</p>
+          <p class="text-slate-500 text-xs mt-0.5">Usuarios que solicitaron eliminar su cuenta</p>
+        </div>
+        <div id="bajas-list" class="divide-y divide-slate-700/40">
+          <div class="text-center py-10 text-slate-500">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal nuevo/editar usuario -->
+<div id="user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeModal()"></div>
+  <div class="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 w-96 shadow-2xl">
+    <h3 class="text-white font-bold text-lg mb-5" id="modal-title">Nuevo Usuario</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Username *</label>
+        <input type="text" id="m-username" placeholder="Ej: supervisor3"
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Nombre completo *</label>
+        <input type="text" id="m-nombre" placeholder="Nombre del usuario"
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Contrasena * <span id="pwd-hint" class="text-slate-500 font-normal">(requerida)</span></label>
+        <input type="password" id="m-password" placeholder="Minimo 6 caracteres"
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Rol</label>
+        <select id="m-rol" class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition">
+          <option value="supervisor">Supervisor</option>
+          <option value="admin">Admin (Technological Imperius)</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm transition">Cancelar</button>
+      <button onclick="saveUser()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition" id="btn-save">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal aprobar solicitud -->
+<div id="aprobar-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+  <div class="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 w-96 shadow-2xl">
+    <h3 class="text-white font-bold text-lg mb-1">Aprobar Solicitud</h3>
+    <p class="text-slate-400 text-sm mb-4" id="aprobar-nombre-lbl"></p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Asignar Username *</label>
+        <input type="text" id="apr-username" placeholder="Ej: supervisor4"
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Contrasena inicial *</label>
+        <input type="text" id="apr-password" placeholder="Contrasena temporal"
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-medium mb-1.5">Notas (opcional)</label>
+        <textarea id="apr-notas" rows="2" placeholder="Mensaje interno..."
+          class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition resize-none"></textarea>
+      </div>
+    </div>
+    <div id="apr-err" class="hidden mt-3 px-3 py-2 rounded-xl bg-red-900/40 text-red-300 text-xs"></div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="closeAprobarModal()" class="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm transition">Cancelar</button>
+      <button onclick="confirmarAprobar()" class="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition">Aprobar y Crear</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-lg"></div>
+
+<script>
+let editingUid = null;
+let approvingSid = null;
+
+function showToast(msg, ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className=`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-lg show ${ok?'bg-green-600 text-white':'bg-red-600 text-white'}`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function showSection(name){
+  ['usuarios','solicitudes','bajas'].forEach(s=>{
+    document.getElementById(`sec-${s}`).classList.add('hidden');
+    const btn=document.getElementById(`tab-${s}`);
+    btn.classList.remove('active','text-white');
+    btn.classList.add('text-slate-400');
+    btn.style.borderColor='';
+  });
+  document.getElementById(`sec-${name}`).classList.remove('hidden');
+  const active=document.getElementById(`tab-${name}`);
+  active.classList.add('active','text-white');
+  active.classList.remove('text-slate-400');
+  if(name==='solicitudes') loadSolicitudes();
+  if(name==='bajas') loadBajas();
+}
+
+// ── Usuarios ──────────────────────────────────────────────
+async function loadUsers(){
+  const res=await fetch('/api/usuarios');
+  const data=await res.json();
+  document.getElementById('users-tbody').innerHTML=data.map(u=>`
+    <tr class="tbl-row border-b border-slate-700/30">
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+            ${u.username.slice(0,2).toUpperCase()}
+          </div>
+          <span class="text-slate-200 font-medium text-sm">${u.username}</span>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-slate-300 text-sm">${u.nombre}</td>
+      <td class="px-4 py-3">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold
+          ${u.rol==='admin'?'bg-amber-900/50 text-amber-300':'bg-blue-900/50 text-blue-300'}">
+          ${u.rol==='admin'?'Admin TI':'Supervisor'}
+        </span>
+      </td>
+      <td class="px-4 py-3">
+        <span class="flex items-center gap-1.5 text-xs font-medium ${u.activo?'text-green-400':'text-slate-500'}">
+          <span class="w-1.5 h-1.5 rounded-full ${u.activo?'bg-green-400 animate-pulse':'bg-slate-500'}"></span>
+          ${u.activo?'Activo':'Inactivo'}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-slate-500 text-xs">${u.creado_en}</td>
+      <td class="px-4 py-3">
+        <div class="flex gap-2 justify-end">
+          <button onclick="openEditModal(${u.id},'${u.username}','${u.nombre.replace(/'/g,'\\'')}','${u.rol}')"
+            class="px-3 py-1 rounded-lg bg-slate-600 hover:bg-slate-500 text-xs text-white transition">Editar</button>
+          <button onclick="toggleUser(${u.id})"
+            class="px-3 py-1 rounded-lg text-xs text-white transition ${u.activo?'bg-red-800/70 hover:bg-red-600':'bg-green-800/70 hover:bg-green-600'}">
+            ${u.activo?'Desactivar':'Activar'}
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openNewModal(){
+  editingUid=null;
+  document.getElementById('modal-title').textContent='Nuevo Usuario';
+  document.getElementById('btn-save').textContent='Crear Usuario';
+  document.getElementById('pwd-hint').textContent='(requerida)';
+  document.getElementById('m-username').value='';
+  document.getElementById('m-nombre').value='';
+  document.getElementById('m-password').value='';
+  document.getElementById('m-rol').value='supervisor';
+  document.getElementById('m-username').disabled=false;
+  document.getElementById('user-modal').classList.remove('hidden');
+}
+function openEditModal(id,username,nombre,rol){
+  editingUid=id;
+  document.getElementById('modal-title').textContent='Editar Usuario';
+  document.getElementById('btn-save').textContent='Guardar';
+  document.getElementById('pwd-hint').textContent='(dejar vacio para no cambiar)';
+  document.getElementById('m-username').value=username;
+  document.getElementById('m-nombre').value=nombre;
+  document.getElementById('m-password').value='';
+  document.getElementById('m-rol').value=rol;
+  document.getElementById('m-username').disabled=true;
+  document.getElementById('user-modal').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('user-modal').classList.add('hidden'); editingUid=null; }
+
+async function saveUser(){
+  const payload={
+    username:document.getElementById('m-username').value.trim(),
+    nombre:  document.getElementById('m-nombre').value.trim(),
+    password:document.getElementById('m-password').value,
+    rol:     document.getElementById('m-rol').value,
+  };
+  if(!payload.nombre){showToast('El nombre es requerido',false);return;}
+  const url   =editingUid?`/api/usuarios/${editingUid}`:'/api/usuarios';
+  const method=editingUid?'PUT':'POST';
+  const res   =await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data  =await res.json();
+  if(res.ok){showToast(editingUid?'Usuario actualizado':'Usuario creado');closeModal();loadUsers();}
+  else showToast(data.error||'Error',false);
+}
+
+async function toggleUser(id){
+  const res=await fetch(`/api/usuarios/${id}/toggle`,{method:'POST'});
+  if(res.ok){showToast('Estado actualizado');loadUsers();}
+  else showToast('Error',false);
+}
+
+// ── Solicitudes de acceso ─────────────────────────────────
+async function loadSolicitudes(){
+  const res =await fetch('/api/solicitudes');
+  const data=await res.json();
+  const cont=document.getElementById('solicitudes-list');
+  const pending=data.filter(s=>s.estado==='pendiente').length;
+  const badge=document.getElementById('badge-sol');
+  if(pending>0){badge.textContent=pending;badge.classList.remove('hidden');}
+  else badge.classList.add('hidden');
+  if(!data.length){
+    cont.innerHTML='<div class="text-center py-10 text-slate-500">No hay solicitudes</div>';return;
+  }
+  cont.innerHTML=data.map(s=>`
+    <div class="px-6 py-5 flex flex-col md:flex-row md:items-start gap-4">
+      <!-- Info -->
+      <div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+        <div>
+          <p class="text-slate-500 text-xs">Nombres</p>
+          <p class="text-white font-medium">${s.nombres}</p>
+        </div>
+        <div>
+          <p class="text-slate-500 text-xs">DNI</p>
+          <p class="text-slate-300">${s.dni}</p>
+        </div>
+        <div>
+          <p class="text-slate-500 text-xs">Telefono</p>
+          <p class="text-slate-300">${s.telefono}</p>
+        </div>
+        <div>
+          <p class="text-slate-500 text-xs">Nacimiento</p>
+          <p class="text-slate-300">${s.nacimiento}</p>
+        </div>
+        <div>
+          <p class="text-slate-500 text-xs">Correo</p>
+          <p class="text-slate-300">${s.correo}</p>
+        </div>
+        <div>
+          <p class="text-slate-500 text-xs">Fecha solicitud</p>
+          <p class="text-slate-400 text-xs">${s.fecha}</p>
+        </div>
+      </div>
+      <!-- Estado y acciones -->
+      <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold
+          ${s.estado==='pendiente'?'bg-yellow-900/50 text-yellow-300':
+            s.estado==='aprobado'?'bg-green-900/50 text-green-300':
+            'bg-red-900/50 text-red-300'}">
+          ${s.estado==='pendiente'?'⏳ Pendiente':
+            s.estado==='aprobado'?'✅ Aprobado':'❌ Rechazado'}
+        </span>
+        ${s.estado==='aprobado'?`<p class="text-slate-500 text-xs">Usuario: <span class="text-blue-400">${s.usuario_asig||''}</span></p>`:''}
+        ${s.estado==='pendiente'?`
+          <div class="flex gap-2 mt-1">
+            <button onclick="openAprobar(${s.id},'${s.nombres.replace(/'/g,'\\'')}','${s.correo}')"
+              class="px-3 py-1.5 rounded-xl bg-green-700 hover:bg-green-600 text-white text-xs font-semibold transition">
+              ✓ Aprobar
+            </button>
+            <button onclick="rechazarSolicitud(${s.id})"
+              class="px-3 py-1.5 rounded-xl bg-red-800/70 hover:bg-red-600 text-white text-xs font-semibold transition">
+              ✕ Rechazar
+            </button>
+          </div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openAprobar(sid, nombres, correo){
+  approvingSid=sid;
+  document.getElementById('aprobar-nombre-lbl').textContent=`Solicitante: ${nombres} (${correo})`;
+  document.getElementById('apr-username').value='';
+  document.getElementById('apr-password').value='';
+  document.getElementById('apr-notas').value='';
+  document.getElementById('apr-err').classList.add('hidden');
+  document.getElementById('aprobar-modal').classList.remove('hidden');
+}
+function closeAprobarModal(){
+  document.getElementById('aprobar-modal').classList.add('hidden');
+  approvingSid=null;
+}
+
+async function confirmarAprobar(){
+  const username=document.getElementById('apr-username').value.trim();
+  const password=document.getElementById('apr-password').value.trim();
+  const notas   =document.getElementById('apr-notas').value;
+  const errEl   =document.getElementById('apr-err');
+  if(!username||!password){
+    errEl.textContent='Username y contrasena son requeridos';
+    errEl.classList.remove('hidden');return;
+  }
+  const res=await fetch(`/api/solicitudes/${approvingSid}/aprobar`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,password,notas})
+  });
+  const data=await res.json();
+  if(res.ok){
+    closeAprobarModal();
+    showToast('Solicitud aprobada — usuario creado');
+    loadSolicitudes();loadUsers();
+  } else {
+    errEl.textContent=data.error||'Error';
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function rechazarSolicitud(sid){
+  if(!confirm('Rechazar esta solicitud?'))return;
+  const res=await fetch(`/api/solicitudes/${sid}/rechazar`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({notas:'Rechazado por admin'})
+  });
+  if(res.ok){showToast('Solicitud rechazada');loadSolicitudes();}
+}
+
+// ── Solicitudes de baja ───────────────────────────────────
+async function loadBajas(){
+  const res =await fetch('/api/solicitudes-baja');
+  const data=await res.json();
+  const cont=document.getElementById('bajas-list');
+  const pending=data.filter(b=>b.estado==='pendiente').length;
+  const badge=document.getElementById('badge-baja');
+  if(pending>0){badge.textContent=pending;badge.classList.remove('hidden');}
+  else badge.classList.add('hidden');
+  if(!data.length){
+    cont.innerHTML='<div class="text-center py-10 text-slate-500">No hay solicitudes de baja</div>';return;
+  }
+  cont.innerHTML=data.map(b=>`
+    <div class="px-6 py-4 flex items-center justify-between gap-4">
+      <div>
+        <p class="text-white text-sm font-medium">${b.username}</p>
+        <p class="text-slate-400 text-xs mt-0.5">${b.motivo||'Sin motivo especificado'}</p>
+        <p class="text-slate-600 text-xs">${b.fecha}</p>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold
+          ${b.estado==='pendiente'?'bg-orange-900/50 text-orange-300':
+            b.estado==='aprobado'?'bg-red-900/50 text-red-300':
+            'bg-slate-700/50 text-slate-400'}">
+          ${b.estado==='pendiente'?'⏳ Pendiente':
+            b.estado==='aprobado'?'🗑️ Cuenta desactivada':'✕ Rechazada'}
+        </span>
+        ${b.estado==='pendiente'?`
+          <button onclick="resolverBaja(${b.id},'aprobar')"
+            class="px-3 py-1 rounded-lg bg-red-800/70 hover:bg-red-600 text-white text-xs transition">Desactivar</button>
+          <button onclick="resolverBaja(${b.id},'rechazar')"
+            class="px-3 py-1 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs transition">Rechazar</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function resolverBaja(bid, accion){
+  const msg=accion==='aprobar'?'Desactivar esta cuenta?':'Rechazar esta solicitud?';
+  if(!confirm(msg))return;
+  const res=await fetch(`/api/solicitudes-baja/${bid}/resolver`,{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accion})
+  });
+  if(res.ok){showToast(accion==='aprobar'?'Cuenta desactivada':'Solicitud rechazada');loadBajas();}
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  loadUsers();
+  // Pre-load badges
+  fetch('/api/solicitudes').then(r=>r.json()).then(d=>{
+    const n=d.filter(s=>s.estado==='pendiente').length;
+    if(n>0){document.getElementById('badge-sol').textContent=n;document.getElementById('badge-sol').classList.remove('hidden');}
+  });
+  fetch('/api/solicitudes-baja').then(r=>r.json()).then(d=>{
+    const n=d.filter(b=>b.estado==='pendiente').length;
+    if(n>0){document.getElementById('badge-baja').textContent=n;document.getElementById('badge-baja').classList.remove('hidden');}
+  });
+});
+</script>
+</body>
+</html>

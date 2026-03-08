@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FuelMaster — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/mobile.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" media="print" onload="this.media='all'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"/></noscript>
+  <style>
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;}
+    .stat-card{transition:transform .15s,box-shadow .15s;}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3);}
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+{% include 'sidebar.html' %}
+
+<main class="flex-1 overflow-auto">
+  <header class="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700/50 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white" style="font-family:'Syne',sans-serif">Panel de Control</h1>
+      <span class="inline-flex items-center gap-1.5 text-xs text-green-400 font-medium mt-0.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>Sistema Online
+      </span>
+    </div>
+    <a href="/liquidos" class="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold rounded-xl transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nueva Carga
+    </a>
+  </header>
+
+  <div class="px-8 py-6 space-y-6">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="stat-card bg-slate-800 rounded-2xl p-5 border border-slate-700/50">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <span class="text-orange-400 text-xs font-semibold bg-orange-900/30 px-2 py-0.5 rounded-full">Liquidos</span>
+        </div>
+        <p class="text-slate-400 text-xs mb-1">Facturado Liquidos (Hoy)</p>
+        <p class="text-2xl font-bold text-white" id="liq-total">S/ 0.00</p>
+        <p class="text-slate-500 text-xs mt-1" id="liq-galones">0.00 gal — 0 cargas</p>
+      </div>
+
+      <div class="stat-card bg-slate-800 rounded-2xl p-5 border border-slate-700/50">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          </div>
+          <span class="text-sky-400 text-xs font-semibold bg-sky-900/30 px-2 py-0.5 rounded-full">GLP</span>
+        </div>
+        <p class="text-slate-400 text-xs mb-1">Facturado GLP (Hoy)</p>
+        <p class="text-2xl font-bold text-white" id="glp-total">$ 0.00</p>
+        <p class="text-slate-500 text-xs mt-1" id="glp-kg">0.00 kg — 0 cargas</p>
+      </div>
+
+      <div class="stat-card bg-slate-800 rounded-2xl p-5 border border-slate-700/50">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <span class="text-emerald-400 text-xs font-semibold bg-emerald-900/30 px-2 py-0.5 rounded-full">Total</span>
+        </div>
+        <p class="text-slate-400 text-xs mb-1">Total Cargas Hoy</p>
+        <p class="text-2xl font-bold text-white" id="total-cargas">0</p>
+        <p class="text-slate-500 text-xs mt-1" id="total-sub">Liquidos + GLP</p>
+      </div>
+    </div>
+
+    <!-- Actividad reciente + accesos rapidos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Actividad reciente -->
+      <div class="md:col-span-2 bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+          <p class="font-semibold text-white text-sm">Ultimas Cargas Registradas</p>
+          <div class="flex gap-2">
+            <a href="/liquidos" class="text-orange-400 hover:text-orange-300 text-xs transition">Ver Liquidos →</a>
+            <span class="text-slate-600">·</span>
+            <a href="/glp" class="text-sky-400 hover:text-sky-300 text-xs transition">Ver GLP →</a>
+          </div>
+        </div>
+        <div class="divide-y divide-slate-700/40" id="recent-list">
+          <div class="px-6 py-4 text-center text-slate-500 text-sm">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Accesos rapidos -->
+      <div class="space-y-3">
+        <div class="bg-slate-800 rounded-2xl border border-slate-700/50 p-5">
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-4">Accesos Rapidos</p>
+          <div class="space-y-2">
+            <a href="/liquidos" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 text-sm font-medium transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Registrar Liquidos
+            </a>
+            <a href="/glp" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-sm font-medium transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Registrar GLP
+            </a>
+            <a href="/actividad" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-300 text-sm font-medium transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Ver Actividad
+            </a>
+          </div>
+        </div>
+
+        <!-- Fecha -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700/50 p-5">
+          <p class="text-slate-500 text-xs mb-1">Fecha actual</p>
+          <p class="text-white font-semibold text-sm" id="fecha-hoy"></p>
+          <p class="text-slate-500 text-xs mt-3 mb-1">Usuario</p>
+          <p class="text-blue-400 font-medium text-sm">{{ nombre }}</p>
+          <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold
+            {% if rol == 'admin' %}bg-amber-900/40 text-amber-300{% else %}bg-blue-900/40 text-blue-300{% endif %}">
+            {% if rol == 'admin' %}Admin TI{% else %}Supervisor{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+async function loadDashboard() {
+  try {
+    const res  = await fetch('/api/dashboard');
+    const data = await res.json();
+    const liq  = data.liquidos_hoy;
+    const glp  = data.glp_hoy;
+
+    document.getElementById('liq-total').textContent =
+      'S/ ' + liq.monto.toLocaleString('es-PE',{minimumFractionDigits:2});
+    document.getElementById('liq-galones').textContent =
+      `${liq.cantidad.toFixed(2)} gal — ${liq.registros} carga${liq.registros!==1?'s':''}`;
+
+    document.getElementById('glp-total').textContent =
+      '$ ' + glp.monto.toLocaleString('es-PE',{minimumFractionDigits:2});
+    document.getElementById('glp-kg').textContent =
+      `${glp.cantidad.toFixed(2)} kg — ${glp.registros} carga${glp.registros!==1?'s':''}`;
+
+    const tot = liq.registros + glp.registros;
+    document.getElementById('total-cargas').textContent = tot;
+    document.getElementById('total-sub').textContent =
+      `${liq.registros} Liquidos + ${glp.registros} GLP`;
+
+    const listEl = document.getElementById('recent-list');
+    if (!data.actividad || !data.actividad.length) {
+      listEl.innerHTML = '<div class="px-6 py-6 text-center text-slate-500 text-sm">Sin registros hoy</div>';
+    } else {
+      listEl.innerHTML = data.actividad.map(r => `
+        <div class="px-6 py-3 flex items-center justify-between hover:bg-slate-700/20 transition">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full ${r.tipo==='Liquidos'?'bg-orange-400':'bg-sky-400'} flex-shrink-0"></span>
+            <div>
+              <p class="text-white text-sm font-medium">${r.producto}</p>
+              <p class="text-slate-500 text-xs">${r.tipo} · ${r.fecha} · ${r.creado_por||'sistema'}</p>
+            </div>
+          </div>
+          <p class="text-slate-300 text-sm font-semibold">
+            ${r.tipo==='Liquidos'?'S/ ':'$ '}${Number(r.total).toLocaleString('es-PE',{minimumFractionDigits:2})}
+          </p>
+        </div>`).join('');
+    }
+  } catch(e) { console.error(e); }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

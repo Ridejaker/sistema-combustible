@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FuelMaster - GLP</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/mobile.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" media="print" onload="this.media='all'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"/></noscript>
+  <style>
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;}
+    select option{background:#1e293b;}
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+{% include "sidebar.html" %}
+
+<!-- MAIN -->
+<main class="flex-1 overflow-auto">
+  <header class="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700/50 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white" style="font-family:'Syne',sans-serif">Registro de Cargas — GLP</h1>
+      <p class="text-slate-400 text-xs mt-0.5">Monto en USD · Monto Unitario = (USD / Cantidad) × Tipo de Cambio</p>
+    </div>
+    <!-- Tipo de cambio en tiempo real -->
+    <div class="flex items-center gap-2 bg-slate-800 border border-emerald-700/50 rounded-xl px-4 py-2">
+      <span class="text-slate-400 text-xs">USD / PEN</span>
+      <span class="text-emerald-400 font-bold text-sm" id="tc-valor">cargando...</span>
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+    </div>
+  </header>
+
+  <div class="px-8 py-6 space-y-6">
+
+    <!-- KPI -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Cargas registradas hoy</p>
+        <p class="text-2xl font-bold text-white" id="cnt-registros">0</p>
+      </div>
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Total GLS hoy</p>
+        <p class="text-2xl font-bold text-white" id="cnt-cantidad">0.00 gls</p>
+      </div>
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Monto Total (Soles) hoy</p>
+        <p class="text-2xl font-bold text-sky-400" id="cnt-soles">S/ 0.00</p>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="bg-slate-800 rounded-2xl border border-sky-500/40 overflow-hidden">
+      <div class="bg-sky-500/10 border-b border-sky-500/30 px-6 py-4 flex items-center justify-between">
+        <h2 class="font-bold text-white flex items-center gap-2" id="form-title">
+          <span class="w-2 h-2 rounded-full bg-sky-400"></span>Nuevo Registro de Carga GLP
+        </h2>
+        <button id="btn-cancel" class="hidden px-4 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-semibold transition">Cancelar edicion</button>
+      </div>
+
+      <form id="glp-form" class="p-6 space-y-5">
+
+        <!-- BLOQUE 1 -->
+        <div>
+          <p class="text-xs font-bold text-sky-400 uppercase tracking-widest mb-3">1. Datos de la Carga</p>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Planta <span class="text-red-400">*</span></label>
+              <select id="planta" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Fecha <span class="text-red-400">*</span></label>
+              <input type="date" id="fecha" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Proveedor <span class="text-red-400">*</span></label>
+              <select id="proveedor" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Chofer <span class="text-red-400">*</span></label>
+              <select id="chofer" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Placa / Tanque <span class="text-red-400">*</span></label>
+              <select id="placa" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700/50"></div>
+
+        <!-- BLOQUE 2 -->
+        <div>
+          <p class="text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">2. Datos de la Factura</p>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Cliente <span class="text-red-400">*</span></label>
+              <input type="text" id="cliente" placeholder="Nombre del cliente"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">N° Factura <span class="text-red-400">*</span></label>
+              <input type="text" id="nro_factura" placeholder="F001-000123"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">N° Guia <span class="text-red-400">*</span></label>
+              <input type="text" id="nro_guia" placeholder="G001-000456"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+          </div>
+
+          <!-- producto, cantidad, monto USD, tipo cambio -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Producto <span class="text-red-400">*</span></label>
+              <select id="producto" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Cantidad (GLS) <span class="text-red-400">*</span></label>
+              <input type="number" id="cantidad" step="0.01" min="0" placeholder="0.00"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">
+                Monto Facturado <span class="text-yellow-400 font-semibold">($ USD)</span>
+                <span class="text-red-400">*</span>
+              </label>
+              <input type="number" id="monto_facturado" step="0.01" min="0" placeholder="$ 0.00"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">
+                Tipo de Cambio
+                <span class="text-emerald-400 text-[10px]">(tiempo real)</span>
+                <span class="text-red-400">*</span>
+              </label>
+              <input type="number" id="tipo_cambio" step="0.0001" min="0" placeholder="3.7500"
+                class="form-input w-full bg-emerald-900/20 border border-emerald-700/50 rounded-xl px-3 py-2.5 text-emerald-300 font-semibold text-sm transition"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTADO: formula visual -->
+        <div class="bg-slate-900/60 rounded-2xl border border-sky-700/40 p-5">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Resultado Automatico</p>
+          <div class="flex items-center justify-center gap-4 flex-wrap">
+            <div class="text-center">
+              <p class="text-slate-500 text-xs mb-1">Monto USD</p>
+              <p class="text-slate-300 font-semibold text-lg" id="f-monto">$ —</p>
+            </div>
+            <div class="text-slate-600 text-xl">÷</div>
+            <div class="text-center">
+              <p class="text-slate-500 text-xs mb-1">Cantidad GLS</p>
+              <p class="text-slate-300 font-semibold text-lg" id="f-cantidad">— gls</p>
+            </div>
+            <div class="text-slate-600 text-xl">×</div>
+            <div class="text-center">
+              <p class="text-slate-500 text-xs mb-1">Tipo Cambio</p>
+              <p class="text-emerald-400 font-semibold text-lg" id="tc-formula">—</p>
+            </div>
+            <div class="text-slate-600 text-xl">=</div>
+            <div class="text-center bg-sky-900/30 border border-sky-700/50 rounded-2xl px-8 py-3">
+              <p class="text-sky-400 text-xs font-bold uppercase tracking-wider mb-1">Monto Unitario</p>
+              <p class="text-3xl font-bold text-sky-400" id="monto_unitario_display">S/ 0.00</p>
+              <input type="hidden" id="monto_unitario" value="0"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" id="btn-submit"
+            class="flex items-center gap-2 px-8 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Registrar Carga
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABLA DESKTOP -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden mobile-hide-table" id="glp-tabla-wrap">
+      <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-white">Historial de Cargas — GLP</p>
+          <p class="text-slate-500 text-xs">Registros ordenados por fecha</p>
+        </div>
+        <button onclick="exportCSV()" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700/50 bg-slate-900/40">
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Cliente</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">N° Factura</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">N° Guia</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Total GLS</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Monto USD</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-sky-400 uppercase tracking-wider">Mto. Unit.</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">T. Cambio</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Producto</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Planta</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Proveedor</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Chofer</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Placa</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <tr><td colspan="14" class="text-center py-10 text-slate-500">Cargando registros...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MOBILE CARDS -->
+    <div class="mobile-cards" id="glp-mobile-cards">
+      <div class="flex items-center justify-between mb-3">
+        <p class="font-semibold text-white text-sm">Historial de Cargas — GLP</p>
+        <button onclick="exportCSV()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-white text-xs rounded-xl">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          CSV
+        </button>
+      </div>
+      <div id="glp-cards-container">
+        <p class="text-center text-slate-500 text-sm py-6">Cargando registros...</p>
+      </div>
+    </div>
+
+  <!-- ══ DEPOSITOS Y DEUDA GLP ══ -->
+  <div class="px-8 pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- CUADRO DE DEPOSITOS -->
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white text-sm">Registro de Depositos — GLP</p>
+            <p class="text-slate-500 text-xs mt-0.5">Agrega depositos realizados manualmente</p>
+          </div>
+          <button onclick="glpAddDeposito()"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Agregar
+          </button>
+        </div>
+        <!-- Fila de ingreso -->
+        <div class="px-6 py-3 border-b border-slate-700/30 flex flex-wrap items-center gap-3">
+          <input type="text" id="glp-dep-desc" placeholder="Descripcion (ej: Deposito BCP)"
+            class="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2 text-white text-sm"/>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+            <input type="number" id="glp-dep-monto" placeholder="0.00" step="0.01" min="0"
+              class="w-32 bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2 text-white text-sm"/>
+          </div>
+        </div>
+        <!-- Lista depositos -->
+        <div id="glp-dep-lista" class="divide-y divide-slate-700/30 max-h-52 overflow-y-auto">
+          <div class="px-6 py-4 text-center text-slate-600 text-sm">Sin depositos aun</div>
+        </div>
+        <!-- Total depositos -->
+        <div class="px-6 py-3 border-t border-slate-700/50 flex items-center justify-between bg-slate-900/40">
+          <p class="text-slate-400 text-sm font-medium">Total Depositado</p>
+          <p class="text-sky-400 text-lg font-bold" id="glp-dep-total">S/ 0.00</p>
+        </div>
+      </div>
+
+      <!-- CUADRO DE DEUDA -->
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50">
+          <p class="font-semibold text-white text-sm">Control de Deuda — GLP</p>
+          <p class="text-slate-500 text-xs mt-0.5">Ingresa el precio total de la carga y la deuda anterior</p>
+        </div>
+        <div class="p-6 space-y-4">
+          <!-- Precio total de la carga -->
+          <div>
+            <label class="block text-slate-400 text-xs font-medium mb-1.5">Precio Total de la Carga (S/)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+              <input type="number" id="glp-precio-total" placeholder="0.00" step="0.01" min="0"
+                oninput="glpCalcDeuda()"
+                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2.5 text-white text-sm"/>
+            </div>
+          </div>
+          <!-- Deuda anterior (se ingresa solo una vez) -->
+          <div>
+            <label class="block text-slate-400 text-xs font-medium mb-1.5">
+              Deuda Anterior (S/)
+              <span class="text-slate-600 font-normal ml-1">— se ingresa solo una vez</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+              <input type="number" id="glp-deuda-anterior" placeholder="0.00" step="0.01" min="0"
+                oninput="glpCalcDeuda()"
+                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2.5 text-white text-sm"/>
+            </div>
+          </div>
+          <!-- Resumen -->
+          <div class="bg-slate-900/60 rounded-xl border border-slate-700/50 p-4 space-y-2.5 mt-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Precio total carga</span>
+              <span class="text-white font-medium" id="glp-d-precio">S/ 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Deuda anterior</span>
+              <span class="text-red-400 font-medium" id="glp-d-anterior">S/ 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Total depositado</span>
+              <span class="text-sky-400 font-medium" id="glp-d-depositado">S/ 0.00</span>
+            </div>
+            <div class="border-t border-slate-700/50 pt-2.5 flex justify-between items-center">
+              <span class="text-white font-semibold">Deuda Total</span>
+              <span class="text-2xl font-bold" id="glp-d-total">S/ 0.00</span>
+            </div>
+          </div>
+          <!-- Botones de accion -->
+          <div class="flex gap-2 mt-4">
+            <button onclick="glpGuardarResumen()"
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-xl transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Descargar Resumen
+            </button>
+            <button onclick="glpLimpiarDeuda()"
+              class="px-4 py-2.5 bg-slate-700 hover:bg-red-900/60 text-slate-400 hover:text-red-300 text-sm font-semibold rounded-xl transition"
+              title="Limpiar todo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+</main>
+
+<!-- Modal eliminar -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 w-80 text-center shadow-2xl">
+    <div class="w-12 h-12 rounded-full bg-red-900/40 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+    </div>
+    <p class="text-white font-semibold mb-1">Eliminar registro?</p>
+    <p class="text-slate-400 text-sm mb-6">Esta accion no se puede deshacer.</p>
+    <div class="flex gap-3">
+      <button id="btn-delete-cancel" class="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm transition">Cancelar</button>
+      <button id="btn-delete-confirm" class="btn-delete-confirm flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-lg"></div>
+<script src="/static/js/shared.js"></script>
+<script src="/static/js/glp.js"></script>
+<script>
+// Sync formula display with tipo_cambio field
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('tipo_cambio')?.addEventListener('input', function(){
+    const el=document.getElementById('tc-formula');
+    if(el) el.textContent = this.value || '—';
+  });
+});
+function exportCSV() {
+  fetch('/api/glp').then(r=>r.json()).then(data=>{
+    if (!data.length) { alert('No hay registros para exportar.'); return; }
+
+    // Columnas en orden correcto
+    const headers = [
+      'FECHA','PLANTA','PROVEEDOR','CHOFER','PLACA',
+      'CLIENTE','N° FACTURA','N° GUIA',
+      'TOTAL GLS','MONTO USD','MTO. UNITARIO (S/)','T. CAMBIO',
+      'PRODUCTO'
+    ];
+
+    const q = v => {
+      const s = String(v == null ? '' : v);
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g,'""') + '"'
+        : s;
+    };
+
+    const rows = [headers.map(q).join(',')];
+
+    data.forEach(r => {
+      rows.push([
+        q(r.fecha), q(r.planta), q(r.proveedor), q(r.chofer), q(r.placa),
+        q(r.cliente), q(r.nro_factura), q(r.nro_guia),
+        Number(r.cantidad).toFixed(2),
+        Number(r.monto_facturado).toFixed(2),
+        Number(r.monto_unitario).toFixed(4),
+        Number(r.tipo_cambio).toFixed(4),
+        q(r.producto)
+      ].join(','));
+    });
+
+    // Totales al pie
+    const totGLS  = data.reduce((s,r)=>s+Number(r.cantidad),0).toFixed(2);
+    const totUSD = data.reduce((s,r)=>s+Number(r.monto_facturado),0).toFixed(2);
+    rows.push(''); // linea vacia
+    rows.push([q('TOTAL'),'','','','','','','',totGLS,totUSD,'','',''].join(','));
+
+    const blob = new Blob(['\uFEFF' + rows.join('\r\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'GLP_Cargas_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+</script>
+
+<script>
+// ── Depositos y Deuda GLP — con persistencia sessionStorage ─
+let glpDepositos = [];
+const GLP_KEY = 'fuelmaster_glp_deuda';
+
+function glpFmt(v) {
+  return 'S/ ' + Number(v||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// Guardar estado en sessionStorage
+function glpGuardarEstado() {
+  const estado = {
+    depositos:     glpDepositos,
+    precioTotal:   document.getElementById('glp-precio-total').value,
+    deudaAnterior: document.getElementById('glp-deuda-anterior').value
+  };
+  sessionStorage.setItem(GLP_KEY, JSON.stringify(estado));
+}
+
+// Restaurar estado desde sessionStorage
+function glpRestaurarEstado() {
+  try {
+    const raw = sessionStorage.getItem(GLP_KEY);
+    if (!raw) return;
+    const estado = JSON.parse(raw);
+    glpDepositos = estado.depositos || [];
+    if (estado.precioTotal)   document.getElementById('glp-precio-total').value   = estado.precioTotal;
+    if (estado.deudaAnterior) document.getElementById('glp-deuda-anterior').value = estado.deudaAnterior;
+    glpRenderDepositos();
+    glpCalcDeuda();
+  } catch(e) {}
+}
+
+function glpAddDeposito() {
+  const desc  = document.getElementById('glp-dep-desc').value.trim();
+  const monto = parseFloat(document.getElementById('glp-dep-monto').value) || 0;
+  if (!monto) { alert('Ingresa un monto valido'); return; }
+  glpDepositos.push({ desc: desc || 'Deposito', monto });
+  document.getElementById('glp-dep-desc').value  = '';
+  document.getElementById('glp-dep-monto').value = '';
+  glpRenderDepositos();
+  glpCalcDeuda();
+  glpGuardarEstado();
+}
+
+function glpRemoveDeposito(i) {
+  glpDepositos.splice(i, 1);
+  glpRenderDepositos();
+  glpCalcDeuda();
+  glpGuardarEstado();
+}
+
+function glpRenderDepositos() {
+  const lista = document.getElementById('glp-dep-lista');
+  if (!glpDepositos.length) {
+    lista.innerHTML = '<div class="px-6 py-4 text-center text-slate-600 text-sm">Sin depositos aun</div>';
+    document.getElementById('glp-dep-total').textContent = 'S/ 0.00';
+    return;
+  }
+  lista.innerHTML = glpDepositos.map((d,i) => `
+    <div class="px-6 py-3 flex items-center justify-between hover:bg-slate-700/20 transition">
+      <p class="text-white text-sm">${d.desc}</p>
+      <div class="flex items-center gap-3">
+        <p class="text-sky-400 font-semibold text-sm">${glpFmt(d.monto)}</p>
+        <button onclick="glpRemoveDeposito(${i})"
+          class="w-6 h-6 rounded-full bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white flex items-center justify-center text-xs transition">✕</button>
+      </div>
+    </div>`).join('');
+  const total = glpDepositos.reduce((s,d) => s + d.monto, 0);
+  document.getElementById('glp-dep-total').textContent = glpFmt(total);
+}
+
+function glpCalcDeuda() {
+  const precio     = parseFloat(document.getElementById('glp-precio-total').value)   || 0;
+  const anterior   = parseFloat(document.getElementById('glp-deuda-anterior').value) || 0;
+  const depositado = glpDepositos.reduce((s,d) => s + d.monto, 0);
+  const deudaTotal = precio + anterior - depositado;
+
+  document.getElementById('glp-d-precio').textContent     = glpFmt(precio);
+  document.getElementById('glp-d-anterior').textContent   = glpFmt(anterior);
+  document.getElementById('glp-d-depositado').textContent = glpFmt(depositado);
+
+  const totalEl = document.getElementById('glp-d-total');
+  if (deudaTotal > 0) {
+    totalEl.className   = 'text-2xl font-bold text-red-400';
+    totalEl.textContent = glpFmt(deudaTotal);
+  } else if (deudaTotal < 0) {
+    totalEl.className   = 'text-2xl font-bold text-emerald-400';
+    totalEl.textContent = glpFmt(Math.abs(deudaTotal)) + ' (a favor)';
+  } else {
+    totalEl.className   = 'text-2xl font-bold text-slate-300';
+    totalEl.textContent = glpFmt(0);
+  }
+  glpGuardarEstado();
+}
+
+// ── Guardar resumen como texto ─────────────────────────────
+function glpGuardarResumen() {
+  const precio     = parseFloat(document.getElementById('glp-precio-total').value)   || 0;
+  const anterior   = parseFloat(document.getElementById('glp-deuda-anterior').value) || 0;
+  const depositado = glpDepositos.reduce((s,d) => s + d.monto, 0);
+  const deudaTotal = precio + anterior - depositado;
+  const fecha      = new Date().toLocaleDateString('es-PE');
+
+  let txt = `RESUMEN DE DEUDA — GLP
+`;
+  txt    += `Fecha: ${fecha}
+`;
+  txt    += `${'='.repeat(40)}
+`;
+  txt    += `
+DEPOSITOS:
+`;
+  if (glpDepositos.length) {
+    glpDepositos.forEach(d => { txt += `  ${d.desc.padEnd(25)} ${glpFmt(d.monto)}
+`; });
+  } else {
+    txt  += `  (Sin depositos)
+`;
+  }
+  txt    += `
+${'─'.repeat(40)}
+`;
+  txt    += `Precio total carga:    ${glpFmt(precio)}
+`;
+  txt    += `Deuda anterior:        ${glpFmt(anterior)}
+`;
+  txt    += `Total depositado:      ${glpFmt(depositado)}
+`;
+  txt    += `${'─'.repeat(40)}
+`;
+  txt    += `DEUDA TOTAL:           ${deudaTotal >= 0 ? glpFmt(deudaTotal) : glpFmt(Math.abs(deudaTotal)) + ' (A FAVOR)'}
+`;
+
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `Deuda_GLP_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Limpiar todo ───────────────────────────────────────────
+function glpLimpiarDeuda() {
+  if (!confirm('Limpiar todos los datos de deuda y depositos?')) return;
+  glpDepositos = [];
+  document.getElementById('glp-precio-total').value   = '';
+  document.getElementById('glp-deuda-anterior').value = '';
+  sessionStorage.removeItem(GLP_KEY);
+  glpRenderDepositos();
+  glpCalcDeuda();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Restaurar estado guardado
+  glpRestaurarEstado();
+
+  // Enter en monto = agregar
+  document.getElementById('glp-dep-monto')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); glpAddDeposito(); }
+  });
+
+  // Guardar al cambiar campos de deuda
+  ['glp-precio-total','glp-deuda-anterior'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', glpGuardarEstado);
+  });
+});
+</script>
+</body>
+</html>

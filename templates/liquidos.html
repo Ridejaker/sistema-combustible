@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FuelMaster - Liquidos</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/mobile.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" media="print" onload="this.media='all'"/>
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"/></noscript>
+  <style>
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;}
+    select option{background:#1e293b;}
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+{% include "sidebar.html" %}
+
+<!-- MAIN -->
+<main class="flex-1 overflow-auto">
+  <header class="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-700/50 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white" style="font-family:'Syne',sans-serif">Registro de Cargas — Liquidos</h1>
+      <p class="text-slate-400 text-xs mt-0.5">Monto en Soles · Precio = Monto Facturado / Cantidad</p>
+    </div>
+  </header>
+
+  <div class="px-8 py-6 space-y-6">
+
+    <!-- KPI -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Cargas registradas hoy</p>
+        <p class="text-2xl font-bold text-white" id="cnt-registros">0</p>
+      </div>
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Total Galones hoy</p>
+        <p class="text-2xl font-bold text-white" id="cnt-galones">0.00 gal</p>
+      </div>
+      <div class="stat-card bg-slate-800 rounded-2xl p-4 border border-slate-700/50">
+        <p class="text-slate-400 text-xs mb-1">Monto Total Facturado hoy</p>
+        <p class="text-2xl font-bold text-orange-400" id="cnt-soles">S/ 0.00</p>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="bg-slate-800 rounded-2xl border border-orange-500/40 overflow-hidden">
+      <div class="bg-orange-500/10 border-b border-orange-500/30 px-6 py-4 flex items-center justify-between">
+        <h2 class="font-bold text-white flex items-center gap-2" id="form-title">
+          <span class="w-2 h-2 rounded-full bg-orange-400"></span>Nuevo Registro de Carga
+        </h2>
+        <button id="btn-cancel" class="hidden px-4 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-white text-xs font-semibold transition">Cancelar edicion</button>
+      </div>
+
+      <form id="liq-form" class="p-6 space-y-5">
+
+        <!-- BLOQUE 1: Datos de la carga -->
+        <div>
+          <p class="text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">1. Datos de la Carga</p>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Planta <span class="text-red-400">*</span></label>
+              <select id="planta" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Fecha <span class="text-red-400">*</span></label>
+              <input type="date" id="fecha" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Proveedor <span class="text-red-400">*</span></label>
+              <select id="proveedor" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Chofer <span class="text-red-400">*</span></label>
+              <select id="chofer" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Placa / Tanque <span class="text-red-400">*</span></label>
+              <select id="placa" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700/50"></div>
+
+        <!-- BLOQUE 2: Datos de la factura -->
+        <div>
+          <p class="text-xs font-bold text-sky-400 uppercase tracking-widest mb-3">2. Datos de la Factura</p>
+
+          <!-- Fila: cliente, factura, guia, flete -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Cliente <span class="text-red-400">*</span></label>
+              <input type="text" id="cliente" placeholder="Nombre del cliente"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">N° Factura <span class="text-red-400">*</span></label>
+              <input type="text" id="nro_factura" placeholder="F001-000123"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">N° Guia <span class="text-red-400">*</span></label>
+              <input type="text" id="nro_guia" placeholder="G001-000456"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Flete de Factura (S/)</label>
+              <input type="number" id="flete_factura" step="0.01" min="0" placeholder="0.00"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+          </div>
+
+          <!-- Fila: producto, cantidad, monto facturado soles -->
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Producto <span class="text-red-400">*</span></label>
+              <select id="producto" class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"></select>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">Cantidad (Galones) <span class="text-red-400">*</span></label>
+              <input type="number" id="cantidad" step="0.01" min="0" placeholder="0.00"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+            <div>
+              <label class="block text-slate-400 text-xs font-medium mb-1.5">
+                Monto Facturado <span class="text-emerald-400 font-semibold">(S/ Soles)</span>
+                <span class="text-red-400">*</span>
+              </label>
+              <input type="number" id="monto_facturado" step="0.01" min="0" placeholder="S/ 0.00"
+                class="form-input w-full bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white text-sm transition"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="bg-slate-900/60 rounded-2xl border border-emerald-700/40 p-5">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Resultado Automatico</p>
+          <div class="flex items-center justify-center gap-6 flex-wrap">
+            <div class="text-center">
+              <p class="text-slate-500 text-xs mb-1">Monto Facturado</p>
+              <p class="text-slate-300 font-semibold text-lg" id="f-monto">S/ —</p>
+            </div>
+            <div class="text-slate-600 text-xl font-light">÷</div>
+            <div class="text-center">
+              <p class="text-slate-500 text-xs mb-1">Cantidad</p>
+              <p class="text-slate-300 font-semibold text-lg" id="f-cantidad">— gal</p>
+            </div>
+            <div class="text-slate-600 text-xl font-light">=</div>
+            <div class="text-center bg-emerald-900/30 border border-emerald-700/50 rounded-2xl px-8 py-3">
+              <p class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">Precio por Galon</p>
+              <p class="text-3xl font-bold text-emerald-400" id="precio_display">S/ 0.00</p>
+              <input type="hidden" id="precio" value="0"/>
+            </div>
+            <div class="text-slate-600 text-xl font-light">→</div>
+            <div class="text-center bg-teal-900/30 border border-teal-700/50 rounded-2xl px-8 py-3">
+              <p class="text-teal-400 text-xs font-bold uppercase tracking-wider mb-1">Precio por Galon</p>
+              <p class="text-teal-300 text-[10px] font-medium mb-1">(Sin IGV)</p>
+              <p class="text-3xl font-bold text-teal-400" id="precio_sin_igv_display">S/ 0.00</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" id="btn-submit"
+            class="flex items-center gap-2 px-8 py-3 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Registrar Carga
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABLA DESKTOP -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden mobile-hide-table" id="liq-tabla-wrap">
+      <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-white">Historial de Cargas — Liquidos</p>
+          <p class="text-slate-500 text-xs">Registros ordenados por fecha</p>
+        </div>
+        <button onclick="exportCSV()" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700/50 bg-slate-900/40">
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Cliente</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">N° Factura</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">N° Guia</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Flete Fact.</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Producto</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Cantidad</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Monto Fact.</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-sky-400 uppercase tracking-wider">Mto. Unit.</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-orange-400 uppercase tracking-wider">Precio/Gal</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Planta</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Proveedor</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Chofer</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Placa</th>
+              <th class="px-3 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <tr><td colspan="15" class="text-center py-10 text-slate-500">Cargando registros...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MOBILE CARDS -->
+    <div class="mobile-cards" id="liq-mobile-cards">
+      <div class="flex items-center justify-between mb-3">
+        <p class="font-semibold text-white text-sm">Historial de Cargas — Liquidos</p>
+        <button onclick="exportCSV()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-white text-xs rounded-xl">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          CSV
+        </button>
+      </div>
+      <div id="liq-cards-container">
+        <p class="text-center text-slate-500 text-sm py-6">Cargando registros...</p>
+      </div>
+    </div>
+
+  <!-- ══ DEPOSITOS Y DEUDA LIQUIDOS ══ -->
+  <div class="px-8 pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- CUADRO DE DEPOSITOS -->
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+          <div>
+            <p class="font-semibold text-white text-sm">Registro de Depositos — Liquidos</p>
+            <p class="text-slate-500 text-xs mt-0.5">Agrega depositos realizados manualmente</p>
+          </div>
+          <button onclick="liqAddDeposito()"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold rounded-xl transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Agregar
+          </button>
+        </div>
+        <!-- Fila de ingreso -->
+        <div class="px-6 py-3 border-b border-slate-700/30 flex flex-wrap items-center gap-3">
+          <input type="text" id="liq-dep-desc" placeholder="Descripcion (ej: Deposito BCP)"
+            class="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-3 py-2 text-white text-sm"/>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+            <input type="number" id="liq-dep-monto" placeholder="0.00" step="0.01" min="0"
+              class="w-32 bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2 text-white text-sm"/>
+          </div>
+        </div>
+        <!-- Lista depositos -->
+        <div id="liq-dep-lista" class="divide-y divide-slate-700/30 max-h-52 overflow-y-auto">
+          <div class="px-6 py-4 text-center text-slate-600 text-sm">Sin depositos aun</div>
+        </div>
+        <!-- Total depositos -->
+        <div class="px-6 py-3 border-t border-slate-700/50 flex items-center justify-between bg-slate-900/40">
+          <p class="text-slate-400 text-sm font-medium">Total Depositado</p>
+          <p class="text-orange-400 text-lg font-bold" id="liq-dep-total">S/ 0.00</p>
+        </div>
+      </div>
+
+      <!-- CUADRO DE DEUDA -->
+      <div class="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-700/50">
+          <p class="font-semibold text-white text-sm">Control de Deuda — Liquidos</p>
+          <p class="text-slate-500 text-xs mt-0.5">Ingresa el precio total de la carga y la deuda anterior</p>
+        </div>
+        <div class="p-6 space-y-4">
+          <!-- Precio total de la carga -->
+          <div>
+            <label class="block text-slate-400 text-xs font-medium mb-1.5">Precio Total de la Carga (S/)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+              <input type="number" id="liq-precio-total" placeholder="0.00" step="0.01" min="0"
+                oninput="liqCalcDeuda()"
+                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2.5 text-white text-sm"/>
+            </div>
+          </div>
+          <!-- Deuda anterior -->
+          <div>
+            <label class="block text-slate-400 text-xs font-medium mb-1.5">
+              Deuda Anterior (S/)
+              <span class="text-slate-600 font-normal ml-1">— se ingresa solo una vez</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">S/</span>
+              <input type="number" id="liq-deuda-anterior" placeholder="0.00" step="0.01" min="0"
+                oninput="liqCalcDeuda()"
+                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl pl-8 pr-3 py-2.5 text-white text-sm"/>
+            </div>
+          </div>
+          <!-- Resumen -->
+          <div class="bg-slate-900/60 rounded-xl border border-slate-700/50 p-4 space-y-2.5 mt-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Precio total carga</span>
+              <span class="text-white font-medium" id="liq-d-precio">S/ 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Deuda anterior</span>
+              <span class="text-red-400 font-medium" id="liq-d-anterior">S/ 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Total depositado</span>
+              <span class="text-orange-400 font-medium" id="liq-d-depositado">S/ 0.00</span>
+            </div>
+            <div class="border-t border-slate-700/50 pt-2.5 flex justify-between items-center">
+              <span class="text-white font-semibold">Deuda Total</span>
+              <span class="text-2xl font-bold" id="liq-d-total">S/ 0.00</span>
+            </div>
+          </div>
+          <!-- Botones de accion -->
+          <div class="flex gap-2 mt-4">
+            <button onclick="liqGuardarResumen()"
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold rounded-xl transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Descargar Resumen
+            </button>
+            <button onclick="liqLimpiarDeuda()"
+              class="px-4 py-2.5 bg-slate-700 hover:bg-red-900/60 text-slate-400 hover:text-red-300 text-sm font-semibold rounded-xl transition"
+              title="Limpiar todo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+</main>
+
+<!-- Modal eliminar -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 w-80 text-center shadow-2xl">
+    <div class="w-12 h-12 rounded-full bg-red-900/40 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+    </div>
+    <p class="text-white font-semibold mb-1">Eliminar registro?</p>
+    <p class="text-slate-400 text-sm mb-6">Esta accion no se puede deshacer.</p>
+    <div class="flex gap-3">
+      <button id="btn-delete-cancel" class="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm transition">Cancelar</button>
+      <button id="btn-delete-confirm" class="btn-delete-confirm flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-lg"></div>
+<script src="/static/js/shared.js"></script>
+<script src="/static/js/liquidos.js"></script>
+<script>
+function exportCSV() {
+  fetch('/api/liquidos').then(r=>r.json()).then(data=>{
+    if (!data.length) { alert('No hay registros para exportar.'); return; }
+
+    const headers = [
+      'FECHA','PLANTA','PROVEEDOR','CHOFER','PLACA',
+      'CLIENTE','N° FACTURA','N° GUIA',
+      'FLETE FACTURA (S/)','PRODUCTO','CANTIDAD (GAL)',
+      'MONTO FACTURADO (S/)','MTO. UNITARIO (S/)','PRECIO/GAL (S/)'
+    ];
+
+    const q = v => {
+      const s = String(v == null ? '' : v);
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g,'""') + '"'
+        : s;
+    };
+
+    const rows = [headers.map(q).join(',')];
+
+    data.forEach(r => {
+      rows.push([
+        q(r.fecha), q(r.planta), q(r.proveedor), q(r.chofer), q(r.placa),
+        q(r.cliente), q(r.nro_factura), q(r.nro_guia),
+        Number(r.flete_factura).toFixed(2),
+        q(r.producto),
+        Number(r.cantidad).toFixed(2),
+        Number(r.monto_facturado).toFixed(2),
+        Number(r.monto_unitario).toFixed(4),
+        Number(r.precio).toFixed(4)
+      ].join(','));
+    });
+
+    // Totales al pie
+    const totGal   = data.reduce((s,r)=>s+Number(r.cantidad),0).toFixed(2);
+    const totSoles = data.reduce((s,r)=>s+Number(r.monto_facturado),0).toFixed(2);
+    const totFlete = data.reduce((s,r)=>s+Number(r.flete_factura),0).toFixed(2);
+    rows.push('');
+    rows.push([q('TOTAL'),'','','','','','','',totFlete,'',totGal,totSoles,'',''].join(','));
+
+    const blob = new Blob(['\uFEFF' + rows.join('\r\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Liquidos_Cargas_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+</script>
+
+<script>
+// ── Depositos y Deuda Liquidos — con persistencia sessionStorage ─
+let liqDepositos = [];
+const LIQ_KEY = 'fuelmaster_liq_deuda';
+
+function liqFmt(v) {
+  return 'S/ ' + Number(v||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function liqGuardarEstado() {
+  const estado = {
+    depositos:     liqDepositos,
+    precioTotal:   document.getElementById('liq-precio-total').value,
+    deudaAnterior: document.getElementById('liq-deuda-anterior').value
+  };
+  sessionStorage.setItem(LIQ_KEY, JSON.stringify(estado));
+}
+
+function liqRestaurarEstado() {
+  try {
+    const raw = sessionStorage.getItem(LIQ_KEY);
+    if (!raw) return;
+    const estado = JSON.parse(raw);
+    liqDepositos = estado.depositos || [];
+    if (estado.precioTotal)   document.getElementById('liq-precio-total').value   = estado.precioTotal;
+    if (estado.deudaAnterior) document.getElementById('liq-deuda-anterior').value = estado.deudaAnterior;
+    liqRenderDepositos();
+    liqCalcDeuda();
+  } catch(e) {}
+}
+
+function liqAddDeposito() {
+  const desc  = document.getElementById('liq-dep-desc').value.trim();
+  const monto = parseFloat(document.getElementById('liq-dep-monto').value) || 0;
+  if (!monto) { alert('Ingresa un monto valido'); return; }
+  liqDepositos.push({ desc: desc || 'Deposito', monto });
+  document.getElementById('liq-dep-desc').value  = '';
+  document.getElementById('liq-dep-monto').value = '';
+  liqRenderDepositos();
+  liqCalcDeuda();
+  liqGuardarEstado();
+}
+
+function liqRemoveDeposito(i) {
+  liqDepositos.splice(i, 1);
+  liqRenderDepositos();
+  liqCalcDeuda();
+  liqGuardarEstado();
+}
+
+function liqRenderDepositos() {
+  const lista = document.getElementById('liq-dep-lista');
+  if (!liqDepositos.length) {
+    lista.innerHTML = '<div class="px-6 py-4 text-center text-slate-600 text-sm">Sin depositos aun</div>';
+    document.getElementById('liq-dep-total').textContent = 'S/ 0.00';
+    return;
+  }
+  lista.innerHTML = liqDepositos.map((d,i) => `
+    <div class="px-6 py-3 flex items-center justify-between hover:bg-slate-700/20 transition">
+      <p class="text-white text-sm">${d.desc}</p>
+      <div class="flex items-center gap-3">
+        <p class="text-orange-400 font-semibold text-sm">${liqFmt(d.monto)}</p>
+        <button onclick="liqRemoveDeposito(${i})"
+          class="w-6 h-6 rounded-full bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white flex items-center justify-center text-xs transition">✕</button>
+      </div>
+    </div>`).join('');
+  const total = liqDepositos.reduce((s,d) => s + d.monto, 0);
+  document.getElementById('liq-dep-total').textContent = liqFmt(total);
+}
+
+function liqCalcDeuda() {
+  const precio     = parseFloat(document.getElementById('liq-precio-total').value)   || 0;
+  const anterior   = parseFloat(document.getElementById('liq-deuda-anterior').value) || 0;
+  const depositado = liqDepositos.reduce((s,d) => s + d.monto, 0);
+  const deudaTotal = precio + anterior - depositado;
+
+  document.getElementById('liq-d-precio').textContent     = liqFmt(precio);
+  document.getElementById('liq-d-anterior').textContent   = liqFmt(anterior);
+  document.getElementById('liq-d-depositado').textContent = liqFmt(depositado);
+
+  const totalEl = document.getElementById('liq-d-total');
+  if (deudaTotal > 0) {
+    totalEl.className   = 'text-2xl font-bold text-red-400';
+    totalEl.textContent = liqFmt(deudaTotal);
+  } else if (deudaTotal < 0) {
+    totalEl.className   = 'text-2xl font-bold text-emerald-400';
+    totalEl.textContent = liqFmt(Math.abs(deudaTotal)) + ' (a favor)';
+  } else {
+    totalEl.className   = 'text-2xl font-bold text-slate-300';
+    totalEl.textContent = liqFmt(0);
+  }
+  liqGuardarEstado();
+}
+
+function liqGuardarResumen() {
+  const precio     = parseFloat(document.getElementById('liq-precio-total').value)   || 0;
+  const anterior   = parseFloat(document.getElementById('liq-deuda-anterior').value) || 0;
+  const depositado = liqDepositos.reduce((s,d) => s + d.monto, 0);
+  const deudaTotal = precio + anterior - depositado;
+  const fecha      = new Date().toLocaleDateString('es-PE');
+
+  let txt = `RESUMEN DE DEUDA — LIQUIDOS\n`;
+  txt    += `Fecha: ${fecha}\n`;
+  txt    += `${"=".repeat(40)}\n`;
+  txt    += `\nDEPOSITOS:\n`;
+  if (liqDepositos.length) {
+    liqDepositos.forEach(d => { txt += `  ${d.desc.padEnd(25)} ${liqFmt(d.monto)}\n`; });
+  } else { txt += `  (Sin depositos)\n`; }
+  txt    += `\n${"─".repeat(40)}\n`;
+  txt    += `Precio total carga:    ${liqFmt(precio)}\n`;
+  txt    += `Deuda anterior:        ${liqFmt(anterior)}\n`;
+  txt    += `Total depositado:      ${liqFmt(depositado)}\n`;
+  txt    += `${"─".repeat(40)}\n`;
+  txt    += `DEUDA TOTAL:           ${deudaTotal >= 0 ? liqFmt(deudaTotal) : liqFmt(Math.abs(deudaTotal)) + ' (A FAVOR)'}\n`;
+
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `Deuda_Liquidos_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function liqLimpiarDeuda() {
+  if (!confirm('Limpiar todos los datos de deuda y depositos?')) return;
+  liqDepositos = [];
+  document.getElementById('liq-precio-total').value   = '';
+  document.getElementById('liq-deuda-anterior').value = '';
+  sessionStorage.removeItem(LIQ_KEY);
+  liqRenderDepositos();
+  liqCalcDeuda();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  liqRestaurarEstado();
+  document.getElementById('liq-dep-monto')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); liqAddDeposito(); }
+  });
+  ['liq-precio-total','liq-deuda-anterior'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', liqGuardarEstado);
+  });
+});
+</script>
+</body>
+</html>

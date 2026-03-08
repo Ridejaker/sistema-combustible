@@ -1,0 +1,316 @@
+<!-- ══════════════════════════════════════════════════════════
+     MOBILE TOPBAR — visible solo en pantallas < md
+══════════════════════════════════════════════════════════ -->
+<div id="mobile-topbar">
+  <button id="hamburger-btn" onclick="sidebarOpen()" aria-label="Abrir menu">
+    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+  <div class="brand">
+    <img src="/static/logo_ti.jpg" alt="TI"/>
+    <span class="brand-text">FuelMaster</span>
+  </div>
+  <!-- Espacio para badge de chat en mobile -->
+  <div id="mobile-chat-badge" style="width:32px;"></div>
+</div>
+
+<!-- OVERLAY para cerrar sidebar -->
+<div id="sidebar-overlay" onclick="sidebarClose()"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════════ -->
+<aside id="main-sidebar" class="w-56 min-h-screen bg-slate-900 border-r border-slate-700/50 flex flex-col flex-shrink-0">
+  <!-- Brand -->
+  <div class="px-4 py-4 border-b border-slate-700/50">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-blue-500/30">
+        <img src="/static/logo_ti.jpg" alt="TI" class="w-full h-full object-cover"/>
+      </div>
+      <div>
+        <p class="font-bold text-white text-xs leading-none" style="font-family:'Syne',sans-serif">FuelMaster</p>
+        <p class="text-blue-400 text-[9px] font-semibold uppercase tracking-wider mt-0.5">Technological Imperius</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 px-3 py-4 space-y-0.5">
+    <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">Menu Principal</p>
+
+    <a href="/" onclick="sidebarClose()" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm font-medium transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </a>
+    <a href="/liquidos" onclick="sidebarClose()" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm font-medium transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+      Liquidos
+    </a>
+    <a href="/glp" onclick="sidebarClose()" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm font-medium transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+      GLP
+    </a>
+    <a href="/actividad" onclick="sidebarClose()" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm font-medium transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Actividad
+    </a>
+    {% if rol == 'admin' %}
+    <div class="pt-3 pb-1">
+      <p class="px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Administracion</p>
+    </div>
+    <a href="/usuarios" onclick="sidebarClose()" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm font-medium transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      Usuarios
+    </a>
+    {% endif %}
+  </nav>
+
+  <!-- User info + logout -->
+  <div class="px-3 py-3 border-t border-slate-700/50">
+    <div class="flex items-center gap-2 mb-2">
+      <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+        {{ nombre[:2]|upper if nombre else 'US' }}
+      </div>
+      <div class="min-w-0">
+        <p class="text-white text-xs font-semibold truncate">{{ nombre }}</p>
+        <p class="text-slate-500 text-[10px] truncate">
+          {% if rol == 'admin' %}Admin TI{% else %}Supervisor{% endif %}
+        </p>
+      </div>
+    </div>
+    <a href="/logout"
+      class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-red-900/40 hover:text-red-400 text-slate-400 text-xs font-medium transition w-full">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Cerrar Sesion
+    </a>
+  </div>
+</aside>
+
+<!-- Script de drawer mobile -->
+<script>
+function sidebarOpen() {
+  document.getElementById('main-sidebar').classList.add('mobile-open');
+  document.getElementById('sidebar-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function sidebarClose() {
+  document.getElementById('main-sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+// Cerrar con tecla Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') sidebarClose(); });
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     CHAT WIDGET — solo para supervisores
+══════════════════════════════════════════════════════════ -->
+{% if rol == 'supervisor' %}
+<div id="chat-widget" style="position:fixed;bottom:20px;right:20px;z-index:9999;width:300px;font-family:'Inter',sans-serif;">
+
+  <!-- Burbuja cerrada -->
+  <div id="chat-bubble" onclick="chatToggle()"
+    style="display:flex;align-items:center;justify-content:space-between;
+           background:linear-gradient(135deg,#7c3aed,#a855f7);
+           border-radius:50px;padding:10px 18px;cursor:pointer;
+           box-shadow:0 4px 20px rgba(168,85,247,0.5);
+           user-select:none;-webkit-user-select:none;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:chatPulse 2s infinite;flex-shrink:0;"></div>
+      <span style="color:white;font-size:13px;font-weight:600;">
+        💬 Chat — {{ nombre }}
+      </span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span id="chat-unread" style="display:none;background:#ef4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center;min-width:18px;"></span>
+      <svg id="chat-chevron" style="width:14px;height:14px;color:rgba(255,255,255,0.7);transition:transform 0.3s;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- Panel abierto -->
+  <div id="chat-panel" style="display:none;margin-bottom:8px;
+    background:#1e293b;border:1px solid rgba(167,139,250,0.3);
+    border-radius:16px;overflow:hidden;
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#4c1d95,#6d28d9);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:chatPulse 2s infinite;"></div>
+        <span style="color:white;font-size:13px;font-weight:700;">Chat Privado</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <div id="chat-online" style="font-size:10px;color:rgba(255,255,255,0.6);align-self:center;"></div>
+        <button onclick="chatToggle()" style="background:rgba(255,255,255,0.1);border:none;border-radius:6px;padding:4px 8px;cursor:pointer;color:white;font-size:11px;">✕</button>
+      </div>
+    </div>
+
+    <!-- Mensajes -->
+    <div id="chat-msgs" style="height:260px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;">
+      <div style="text-align:center;color:#475569;font-size:11px;padding:20px 0;">Cargando mensajes...</div>
+    </div>
+
+    <!-- Input -->
+    <div style="padding:10px 12px;border-top:1px solid rgba(255,255,255,0.05);display:flex;gap:8px;">
+      <input id="chat-input" type="text" placeholder="Escribe un mensaje..." maxlength="300"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:10px;
+               padding:8px 12px;color:white;font-size:16px;outline:none;-webkit-appearance:none;"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();chatEnviar();}" />
+      <button onclick="chatEnviar()"
+        style="background:#7c3aed;border:none;border-radius:10px;padding:8px 14px;
+               cursor:pointer;color:white;font-size:18px;flex-shrink:0;
+               -webkit-tap-highlight-color:transparent;">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes chatPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+#chat-msgs::-webkit-scrollbar { width:4px; }
+#chat-msgs::-webkit-scrollbar-track { background:transparent; }
+#chat-msgs::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }
+</style>
+
+<script>
+(function() {
+  const MI_NOMBRE   = {{ nombre|tojson }};
+  const MI_USER     = {{ username|tojson }};
+  let ultimoId      = 0;
+  let chatAbierto   = false;
+  let mensajesNoLeidos = 0;
+  let intervalo     = null;
+
+  window.chatToggle = function() {
+    chatAbierto = !chatAbierto;
+    const panel   = document.getElementById('chat-panel');
+    const chevron = document.getElementById('chat-chevron');
+    panel.style.display   = chatAbierto ? 'block' : 'none';
+    chevron.style.transform = chatAbierto ? 'rotate(180deg)' : '';
+    if (chatAbierto) {
+      mensajesNoLeidos = 0;
+      actualizarBadge();
+      setTimeout(() => scrollBottom(), 100);
+      // En mobile: no hacer focus automático para evitar que el teclado tape el chat
+      if (window.innerWidth > 767) {
+        document.getElementById('chat-input').focus();
+      }
+    }
+  };
+
+  function scrollBottom() {
+    const el = document.getElementById('chat-msgs');
+    if (el) el.scrollTop = el.scrollHeight;
+  }
+
+  function actualizarBadge() {
+    const badge = document.getElementById('chat-unread');
+    if (!badge) return;
+    if (mensajesNoLeidos > 0 && !chatAbierto) {
+      badge.style.display = 'flex';
+      badge.textContent   = mensajesNoLeidos > 9 ? '9+' : mensajesNoLeidos;
+    } else {
+      badge.style.display = 'none';
+    }
+    // Badge en mobile topbar también
+    const mb = document.getElementById('mobile-chat-badge');
+    if (mb) {
+      mb.innerHTML = mensajesNoLeidos > 0 && !chatAbierto
+        ? `<div onclick="chatToggle()" style="width:28px;height:28px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:white;font-weight:700;">${mensajesNoLeidos > 9 ? '9+' : mensajesNoLeidos}</div>`
+        : `<div onclick="chatToggle()" style="width:28px;height:28px;border-radius:50%;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">💬</div>`;
+    }
+  }
+
+  function fmtFecha(f) {
+    const d = new Date(f.replace(' ','T'));
+    return isNaN(d) ? f : d.toLocaleTimeString('es-PE', {hour:'2-digit',minute:'2-digit'});
+  }
+
+  function agregarMensajes(msgs) {
+    const cont = document.getElementById('chat-msgs');
+    const estaAbajo = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 80;
+
+    msgs.forEach(m => {
+      const propio = m.username === MI_USER;
+      const div = document.createElement('div');
+      div.style.cssText = `display:flex;flex-direction:column;align-items:${propio?'flex-end':'flex-start'};`;
+
+      const burbuja = document.createElement('div');
+      burbuja.style.cssText = `
+        max-width:200px;padding:7px 11px;border-radius:${propio?'14px 14px 4px 14px':'14px 14px 14px 4px'};
+        background:${propio?'linear-gradient(135deg,#7c3aed,#a855f7)':'#1e3a5f'};
+        color:white;font-size:13px;line-height:1.4;word-break:break-word;`;
+      burbuja.textContent = m.mensaje;
+
+      const meta = document.createElement('div');
+      meta.style.cssText = 'font-size:10px;color:#475569;margin-top:2px;';
+      meta.textContent = `${m.nombre} · ${fmtFecha(m.fecha)}`;
+
+      div.appendChild(burbuja);
+      div.appendChild(meta);
+      cont.appendChild(div);
+    });
+
+    if (estaAbajo || msgs.some(m => m.username === MI_USER)) scrollBottom();
+  }
+
+  async function cargarNuevos() {
+    try {
+      const res  = await fetch(`/api/chat/mensajes?desde=${ultimoId}`);
+      const msgs = await res.json();
+      if (!msgs.length) return;
+
+      if (ultimoId === 0 && document.getElementById('chat-msgs').children.length === 1) {
+        document.getElementById('chat-msgs').innerHTML = '';
+      }
+
+      const nuevos = msgs.filter(m => m.id > ultimoId);
+      if (!nuevos.length) return;
+
+      ultimoId = Math.max(...nuevos.map(m => m.id));
+      agregarMensajes(nuevos);
+
+      const otrosNuevos = nuevos.filter(m => m.username !== MI_USER);
+      if (!chatAbierto && otrosNuevos.length) {
+        mensajesNoLeidos += otrosNuevos.length;
+        actualizarBadge();
+      }
+
+      const otros = [...new Set(msgs.slice(-20).filter(m => m.username !== MI_USER).map(m => m.nombre))];
+      const onlineEl = document.getElementById('chat-online');
+      if (onlineEl && otros.length) onlineEl.textContent = `${otros[0]} conectada`;
+
+    } catch(e) {}
+  }
+
+  window.chatEnviar = async function() {
+    const inp = document.getElementById('chat-input');
+    const msg = inp.value.trim();
+    if (!msg) return;
+    inp.value = '';
+    try {
+      await fetch('/api/chat/enviar', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({mensaje: msg})
+      });
+      await cargarNuevos();
+    } catch(e) {}
+  };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Init badge mobile
+    actualizarBadge();
+    try {
+      const r  = await fetch('/api/chat/ultimo_id');
+      const d  = await r.json();
+      ultimoId = Math.max(0, d.id - 20);
+      await cargarNuevos();
+    } catch(e) {}
+    intervalo = setInterval(cargarNuevos, 2000);
+  });
+})();
+</script>
+{% endif %}
